@@ -17,11 +17,11 @@ var connection = mysql.createConnection({
 connection.connect(function (err) {
     if (err) throw err;
     console.log("connected as id " + connection.threadId);
-    bidAuction();
+    productList();
     
 
 });
-function bidAuction() {
+function productList() {
     // query the database for all items being auctioned
     connection.query("SELECT * FROM products", function(err, results) {
       if (err) throw err;
@@ -38,7 +38,7 @@ function bidAuction() {
               }
               return choiceArray;
             },
-            message: "What product would you like to place a bid in?"
+            message: "What product would you like to buy?"
           },
           {
             name: "quantity",
@@ -56,29 +56,32 @@ function bidAuction() {
           }
   
           // determine if bid was high enough
-          if (chosenItem.stock_quantity> parseInt(answer.quantity)) {
+          if (chosenItem.stock_quantity>= parseInt(answer.quantity)) {
             newQuantity=chosenItem.stock_quantity-parseInt(answer.quantity)
-            console.log(newQuantity)
+            productSale=answer.quantity*parseInt(chosenItem.price);
             // bid was high enough, so update db, let the user know, and start over
             connection.query(
               "UPDATE products SET ? WHERE ?",
               [
                 {
-                  stock_quantity: newQuantity
+                  stock_quantity: newQuantity,
+                  product_sales: productSale
+
                 },
                 {
                   item_id: chosenItem.item_id
                 }
+                
               ],
               function(error) {
                 if (error) throw err;
                
               }
             );
-            console.log(chosenItem)
+            
             console.log("Order placed successfully!")
                 
-                console.log("There are now "+ newQuantity+" units left.")
+                
                 inquirer.prompt([
                     {name: "new_order",
                      type:  "confirm",
@@ -86,7 +89,7 @@ function bidAuction() {
                   ])
                   .then(function(answer){
                       if(answer.new_order){
-                        bidAuction();
+                        productList();
                       }
                       else {console.log("Ok, thanks for visiting bamazon!")
                        connection.end();}
@@ -96,7 +99,7 @@ function bidAuction() {
           else {
             // bid wasn't high enough, so apologize and start over
             console.log(`We don't have enough of that item in stock to fulfill your order! We only have ${chosenItem.stock_quantity} units available at this time.`);
-            bidAuction();
+            productList();
           }
         });
     });
