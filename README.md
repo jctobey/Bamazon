@@ -1,3 +1,5 @@
+Link to Video Demo: https://drive.google.com/file/d/16ugmwHHkcQ8U7t7xf42HA9gtsB0vSs9m/view
+
 Welcome to the Bamazon App!
 
 The features included in the Bamazon Command Line application are:
